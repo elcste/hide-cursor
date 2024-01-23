@@ -29,20 +29,20 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 export default class HideCursor extends Extension {
     enable() {
-		this._hideCursor = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 5, () => {
-			let tracker = Meta.CursorTracker.get_for_display(global.display);
-			tracker.set_pointer_visible(false);
+        this._hideCursor = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 5, () => {
+            let tracker = Meta.CursorTracker.get_for_display(global.display);
+            tracker.set_pointer_visible(false);
 
             return GLib.SOURCE_CONTINUE;
         });
     }
 
     disable() {
-		if (this._hideCursor) {
+        if (this._hideCursor) {
             GLib.Source.remove(this._hideCursor);
             this._hideCursor = null;
         }
-		let tracker = Meta.CursorTracker.get_for_display(global.display);
-		tracker.set_pointer_visible(true);
+        let tracker = Meta.CursorTracker.get_for_display(global.display);
+        tracker.set_pointer_visible(true);
     }
 }
