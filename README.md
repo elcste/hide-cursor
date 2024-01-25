@@ -1,4 +1,8 @@
-# Hide Cursor
+## Hide Cursor
+
+#### Install from the [GNOME Shell Extensions website](https://extensions.gnome.org/extension/6727/hide-cursor/)
+
+### ⁂
 
 GNOME Shell extension to hide the cursor on inactivity
 
