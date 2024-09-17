@@ -37,30 +37,46 @@ export default class HideCursor extends Extension {
 
         // Internals.
         this._tracker = Meta.CursorTracker.get_for_display(global.display);
+        this._seat = Clutter.get_default_backend().get_default_seat();
         this._tick = Date.now(); // Reset on every cursor move.
         this._visible = true; // Lower when hidden to perform less work.
+        // Raise to make sure that all calls to `inhibit_unfocus()`
+        // are paired with `uninhibit_unfocus()`.
+        this._has_inhibited = false; // Remember that *this extension* did.
 
         // Callbacks.
-        this._reset = this._tracker.connect("position-invalidated", () => {
-            this._tick = Date.now();
-            this._visible = true; // (cursor automatically made visible on move by gnome).
-        });
         this._hide = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, this.checkEvery, () => {
             if (this._visible) {
                 const now = Date.now();
                 const elapsed = now - this._tick; // Milliseconds.
                 if (elapsed >= 1000 * this.disappearAfter) {
 
-                    // (original extension code to hide cursor)
-                    const seat = Clutter.get_default_backend().get_default_seat();
-                    if (!seat.is_unfocus_inhibited())
-                        seat.inhibit_unfocus();
-                    this._tracker.set_pointer_visible(false);
+                    // Leave focus where cursor is hidden.
+                    if (this._seat.is_unfocus_inhibited()) {
+                        // Inhibited, but not by this extension.
+                        this._has_inhibited = false;
+                    } else {
+                        this._seat.inhibit_unfocus();
+                        this._has_inhibited = true; // Remember to pair call.
+                    }
 
+                    this._tracker.set_pointer_visible(false);
                     this._visible = false; // Stop calculating as long as it's hidden.
                 }
             }
             return GLib.SOURCE_CONTINUE;
+        });
+        this._reset = this._tracker.connect("position-invalidated", () => {
+            // (cursor automatically made visible on move by gnome).
+            this._tick = Date.now();
+            if (!this._visible) {
+                // First time since the hide.
+                this._visible = true;
+                if (this._has_inhibited) {
+                    this._seat.uninhibit_unfocus(); // Pair call.
+                    this._has_inhibited = false;
+                }
+            }
         });
     }
 
@@ -75,10 +91,11 @@ export default class HideCursor extends Extension {
             this._hide = null;
         }
 
-        // (original extension code to.. ?)
-        const seat = Clutter.get_default_backend().get_default_seat();
-        if (seat.is_unfocus_inhibited())
-            seat.uninhibit_unfocus();
+        // Pair last call.
+        if (this._has_inhibited) {
+            this._seat.uninhibit_unfocus();
+        }
+
         this._tracker.set_pointer_visible(true);
     }
 }
