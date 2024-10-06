@@ -25,12 +25,17 @@
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
 import Meta from 'gi://Meta';
+import Gio from 'gi://Gio';
 
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 
 export default class HideCursor extends Extension {
     enable() {
-        this._hideCursor = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 5, () => {
+        this._settings = this.getSettings();
+
+        this._hideCursor = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, this._settings.get_int("timeout"), () => {
             let tracker = Meta.CursorTracker.get_for_display(global.display);
             const seat = Clutter.get_default_backend().get_default_seat();
 
@@ -43,6 +48,8 @@ export default class HideCursor extends Extension {
     }
 
     disable() {
+        this._settings = null;
+
         if (this._hideCursor) {
             GLib.Source.remove(this._hideCursor);
             this._hideCursor = null;
