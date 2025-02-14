@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Alexander Browne
+ * Copyright 2024-25 Alexander Browne
  * Copyright 2020 Evan Welsh (https://gjs.guide/extensions/review-guidelines/review-guidelines.html#remove-main-loop-sources)
  * Copyright 2020 Jeff Channell (https://github.com/jeffchannell/jiggle/blob/master/cursor.js)
  */
