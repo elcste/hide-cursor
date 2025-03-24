@@ -30,7 +30,7 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 export default class HideCursor extends Extension {
     enable() {
         this._hideCursor = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 5, () => {
-            let tracker = global.backend.get_cursor_tracker(global.display);
+            let tracker = global.backend.get_cursor_tracker();
             const seat = Clutter.get_default_backend().get_default_seat();
 
             if (!seat.is_unfocus_inhibited())
@@ -46,7 +46,7 @@ export default class HideCursor extends Extension {
             GLib.Source.remove(this._hideCursor);
             this._hideCursor = null;
         }
-        let tracker = global.backend.get_cursor_tracker(global.display);
+        let tracker = global.backend.get_cursor_tracker();
         const seat = Clutter.get_default_backend().get_default_seat();
 
         if (seat.is_unfocus_inhibited())
