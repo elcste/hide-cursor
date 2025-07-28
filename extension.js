@@ -22,35 +22,41 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-import Clutter from 'gi://Clutter';
-import GLib from 'gi://GLib';
+'use strict';
 
-import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
+const {Clutter, GLib, Meta} = imports.gi;
 
-export default class HideCursor extends Extension {
-    enable() {
-        this._hideCursor = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 5, () => {
-            let tracker = global.backend.get_cursor_tracker();
-            const seat = Clutter.get_default_backend().get_default_seat();
+class Extension {
 
-            if (!seat.is_unfocus_inhibited())
-                seat.inhibit_unfocus();
-            tracker.set_pointer_visible(false);
+ enable() {
+   this._hideCursor = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 5, () => {
+       let tracker = Meta.CursorTracker.get_for_display(global.display);
+       const seat = Clutter.get_default_backend().get_default_seat();
 
-            return GLib.SOURCE_CONTINUE;
-        });
-    }
+       if (!seat.is_unfocus_inhibited())
+           seat.inhibit_unfocus();
+       tracker.set_pointer_visible(false);
 
-    disable() {
-        if (this._hideCursor) {
-            GLib.Source.remove(this._hideCursor);
-            this._hideCursor = null;
-        }
-        let tracker = global.backend.get_cursor_tracker();
-        const seat = Clutter.get_default_backend().get_default_seat();
+       return GLib.SOURCE_CONTINUE;
+   });
+ }
 
-        if (seat.is_unfocus_inhibited())
-            seat.uninhibit_unfocus();
-        tracker.set_pointer_visible(true);
-    }
+ disable() {
+   if (this._hideCursor) {
+       GLib.Source.remove(this._hideCursor);
+       this._hideCursor = null;
+   }
+   let tracker = Meta.CursorTracker.get_for_display(global.display);
+   const seat = Clutter.get_default_backend().get_default_seat();
+
+   if (seat.is_unfocus_inhibited())
+       seat.uninhibit_unfocus();
+   tracker.set_pointer_visible(true);
+ }
+
+}
+
+// This function is called once when the extension is loaded, not enabled.
+function init() {
+ return new Extension();
 }
