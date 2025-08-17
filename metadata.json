@@ -3,7 +3,7 @@
   "description": "Hide the mouse cursor on inactivity.\n\nFor use on Wayland, since unclutter, unclutter-xfixes and xbanish only work on X11.\n\nA backport to GNOME Shell 42 was provided by a contributor. I have not tested it myself. Feedback welcome! Does it work with GS 43 or 44?",
   "uuid": "hide-cursor@elcste.com",
   "shell-version": [
-    "48"
+    "49"
   ],
   "url": "https://github.com/elcste/hide-cursor"
 }

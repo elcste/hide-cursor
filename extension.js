@@ -29,28 +29,63 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 export default class HideCursor extends Extension {
     enable() {
+
         this._hideCursor = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 5, () => {
-            let tracker = global.backend.get_cursor_tracker();
             const seat = Clutter.get_default_backend().get_default_seat();
 
             if (!seat.is_unfocus_inhibited())
                 seat.inhibit_unfocus();
-            tracker.set_pointer_visible(false);
+            //tracker.set_pointer_visible(false);
+            this._hidePointerUntilMotion();
 
             return GLib.SOURCE_CONTINUE;
         });
     }
 
     disable() {
-        if (this._hideCursor) {
-            GLib.Source.remove(this._hideCursor);
-            this._hideCursor = null;
-        }
-        let tracker = global.backend.get_cursor_tracker();
         const seat = Clutter.get_default_backend().get_default_seat();
 
         if (seat.is_unfocus_inhibited())
             seat.uninhibit_unfocus();
-        tracker.set_pointer_visible(true);
+        //tracker.set_pointer_visible(true);
+        this._showPointer();
+
+        if (this._hideCursor) {
+            GLib.Source.remove(this._hideCursor);
+            this._hideCursor = null;
+        }
+    }
+
+    _showPointer() {
+        this._cursorTracker = global.backend.get_cursor_tracker();
+
+        if (this._cursorVisibleInhibited) {
+            this._cursorTracker.uninhibit_cursor_visibility();
+            this._cursorVisibleInhibited = false;
+        }
+
+        if (this._motionId) {
+            global.stage.disconnect(this._motionId);
+            this._motionId = 0;
+        }
+    }
+
+    _hidePointer() {
+        this._cursorTracker = global.backend.get_cursor_tracker();
+
+        if (!this._cursorVisibleInhibited) {
+            this._cursorTracker.inhibit_cursor_visibility();
+            this._cursorVisibleInhibited = true;
+        }
+    }
+
+        _hidePointerUntilMotion() {
+        this._motionId = global.stage.connect('captured-event', (stage, event) => {
+            if (event.type() === Clutter.EventType.MOTION)
+                this._showPointer();
+
+            return Clutter.EVENT_PROPAGATE;
+        });
+        this._hidePointer();
     }
 }
