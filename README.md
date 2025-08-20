@@ -1,7 +1,12 @@
 ## Hide Cursor
 
-### Install from the [GNOME Shell Extensions website](https://extensions.gnome.org/extension/6727/hide-cursor/)
+### *Help needed for GNOME 49 (and beyond)*
 
+*The cursor hiding API changed in the upcoming Gnome 49 release and [I haven't found a way to get this extension working](https://discourse.gnome.org/t/un-hiding-cursor-on-gnome-49/30747).*
+
+<b>⁂</b>
+
+### Install from the [GNOME Shell Extensions website](https://extensions.gnome.org/extension/6727/hide-cursor/)
 
 GNOME Shell extension to hide the cursor on inactivity
 
