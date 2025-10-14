@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.hide-cursor-elcste-com"
+    path="/org/gnome/shell/extensions/hide-cursor-elcste-com/">
+    <key name="timeout" type="i">
+      <default>3</default>
+      <summary>Hide cursor timeout</summary>
+      <description>Time in seconds after which the cursor is hidden when idle.</description>
+    </key>
+  </schema>
+</schemalist>
