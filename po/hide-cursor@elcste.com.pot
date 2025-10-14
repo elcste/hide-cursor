@@ -1,0 +1,14 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
+
+#: prefs.js:16
+msgid "Cursor Hiding"
+msgstr ""
+
+#: prefs.js:22
+msgid "Hide cursor after (seconds)"
+msgstr ""

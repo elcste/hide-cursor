@@ -1,91 +1,71 @@
-/*
- * Copyright 2024-25 Alexander Browne
- * Copyright 2020 Evan Welsh (https://gjs.guide/extensions/review-guidelines/review-guidelines.html#remove-main-loop-sources)
- * Copyright 2020 Jeff Channell (https://github.com/jeffchannell/jiggle/blob/master/cursor.js)
- */
+import GLib from 'gi://GLib'
+import Clutter from 'gi://Clutter'
+import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js'
 
-/* extension.js
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
- */
-
-import Clutter from 'gi://Clutter';
-import GLib from 'gi://GLib';
-
-import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 export default class HideCursor extends Extension {
-    enable() {
+  TICK_TIMEOUT = 1
 
-        this._hideCursor = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 5, () => {
-            const seat = Clutter.get_default_backend().get_default_seat();
+  enable() {
+    this._settings = this.getSettings()
+    this.HIDE_TIMEOUT = this._settings.get_int('timeout') * 1000
+    this._settings.connect('changed::timeout', () =>
+      this.HIDE_TIMEOUT = this._settings.get_int('timeout') * 1000)
 
-            if (!seat.is_unfocus_inhibited())
-                seat.inhibit_unfocus();
-            //tracker.set_pointer_visible(false);
-            this._hidePointerUntilMotion();
+    this._seat = Clutter.get_default_backend().get_default_seat()
+    this._timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, this.TICK_TIMEOUT, this.tick)
+    this._tracker = global.backend.get_cursor_tracker()
+    this._positionChangedId = this._tracker.connect('position-invalidated', this.move)
+    this._lastMove = Date.now()
+  }
 
-            return GLib.SOURCE_CONTINUE;
-        });
+  disable() {
+    if (this._positionChangedId) {
+      this._tracker.disconnect(this._positionChangedId)
+      this._positionChangedId = null
+    }
+    
+    if (this._tracker) {
+      this._tracker.uninhibit_cursor_visibility()
+      this._tracker = null
+    }
+    
+    if (this._timer) {
+      GLib.Source.remove(this._timer)
+      this._timer = null
     }
 
-    disable() {
-        const seat = Clutter.get_default_backend().get_default_seat();
+    if (this._hasInhibited) {
+      this._seat.uninhibit_unfocus()
+      this._hasInhibited = false
+    }
+      
+    this._seat = null
+    this._lastMove = null
+    this.HIDE_TIMEOUT = null
+  }
 
-        if (seat.is_unfocus_inhibited())
-            seat.uninhibit_unfocus();
-        //tracker.set_pointer_visible(true);
-        this._showPointer();
-
-        if (this._hideCursor) {
-            GLib.Source.remove(this._hideCursor);
-            this._hideCursor = null;
-        }
+  tick = () => {
+    if (Date.now() - this._lastMove > this.HIDE_TIMEOUT && this._tracker.get_pointer_visible()) {
+      if (!this._hasInhibited) {
+        this._seat.inhibit_unfocus()
+        this._hasInhibited = true
+      }
+      this._tracker.inhibit_cursor_visibility()
     }
 
-    _showPointer() {
-        this._cursorTracker = global.backend.get_cursor_tracker();
+    return GLib.SOURCE_CONTINUE
+  }
+  
+  move = () => {
+    this._lastMove = Date.now()
 
-        if (this._cursorVisibleInhibited) {
-            this._cursorTracker.uninhibit_cursor_visibility();
-            this._cursorVisibleInhibited = false;
-        }
-
-        if (this._motionId) {
-            global.stage.disconnect(this._motionId);
-            this._motionId = 0;
-        }
+    if (this._hasInhibited) {
+      this._seat.uninhibit_unfocus()
+      this._hasInhibited = false
     }
 
-    _hidePointer() {
-        this._cursorTracker = global.backend.get_cursor_tracker();
-
-        if (!this._cursorVisibleInhibited) {
-            this._cursorTracker.inhibit_cursor_visibility();
-            this._cursorVisibleInhibited = true;
-        }
-    }
-
-        _hidePointerUntilMotion() {
-        this._motionId = global.stage.connect('captured-event', (stage, event) => {
-            if (event.type() === Clutter.EventType.MOTION)
-                this._showPointer();
-
-            return Clutter.EVENT_PROPAGATE;
-        });
-        this._hidePointer();
-    }
+    if (!this._tracker.get_pointer_visible())
+      this._tracker.uninhibit_cursor_visibility()
+  }
 }
