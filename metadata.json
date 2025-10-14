@@ -6,5 +6,6 @@
     "49"
   ],
   "url": "https://github.com/elcste/hide-cursor",
-  "settings-schema": "org.gnome.shell.extensions.hide-cursor-elcste-com"
+  "settings-schema": "org.gnome.shell.extensions.hide-cursor-elcste-com",
+  "gettext-domain": "hide-cursor@elcste.com"
 }

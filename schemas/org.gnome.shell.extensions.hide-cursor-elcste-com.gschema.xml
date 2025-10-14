@@ -3,7 +3,7 @@
   <schema id="org.gnome.shell.extensions.hide-cursor-elcste-com"
     path="/org/gnome/shell/extensions/hide-cursor-elcste-com/">
     <key name="timeout" type="i">
-      <default>3</default>
+      <default>5</default>
       <summary>Hide cursor timeout</summary>
       <description>Time in seconds after which the cursor is hidden when idle.</description>
     </key>
