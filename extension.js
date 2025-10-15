@@ -42,6 +42,7 @@ export default class HideCursor extends Extension {
       
     this._seat = null
     this._lastMove = null
+    this._settings = null
     this.HIDE_TIMEOUT = null
   }
 
