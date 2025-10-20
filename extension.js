@@ -1,56 +1,82 @@
-/*
- * Copyright 2024-25 Alexander Browne
- * Copyright 2020 Evan Welsh (https://gjs.guide/extensions/review-guidelines/review-guidelines.html#remove-main-loop-sources)
- * Copyright 2020 Jeff Channell (https://github.com/jeffchannell/jiggle/blob/master/cursor.js)
- */
+import GLib from 'gi://GLib'
+import Clutter from 'gi://Clutter'
+import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js'
 
-/* extension.js
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
- */
-
-import Clutter from 'gi://Clutter';
-import GLib from 'gi://GLib';
-
-import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 export default class HideCursor extends Extension {
-    enable() {
-        this._hideCursor = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 5, () => {
-            let tracker = global.backend.get_cursor_tracker();
-            const seat = Clutter.get_default_backend().get_default_seat();
+  TICK_TIMEOUT = 1
 
-            if (!seat.is_unfocus_inhibited())
-                seat.inhibit_unfocus();
-            tracker.set_pointer_visible(false);
+  enable() {
+    this._settings = this.getSettings()
+    this.HIDE_TIMEOUT = this._settings.get_int('timeout') * 1000
+    this._settingsConnectionID = this._settings.connect('changed::timeout', () =>
+      this.HIDE_TIMEOUT = this._settings.get_int('timeout') * 1000)
 
-            return GLib.SOURCE_CONTINUE;
-        });
+    this._seat = Clutter.get_default_backend().get_default_seat()
+    this._timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, this.TICK_TIMEOUT, this.tick)
+    this._tracker = global.backend.get_cursor_tracker()
+    this._positionChangedId = this._tracker.connect('position-invalidated', this.move)
+    this._lastMove = Date.now()
+  }
+
+  disable() {
+    if (this._positionChangedId) {
+      this._tracker.disconnect(this._positionChangedId)
+      this._positionChangedId = null
     }
 
-    disable() {
-        if (this._hideCursor) {
-            GLib.Source.remove(this._hideCursor);
-            this._hideCursor = null;
-        }
-        let tracker = global.backend.get_cursor_tracker();
-        const seat = Clutter.get_default_backend().get_default_seat();
-
-        if (seat.is_unfocus_inhibited())
-            seat.uninhibit_unfocus();
-        tracker.set_pointer_visible(true);
+    if (this._settingsConnectionID) {
+      this._settings.disconnect(this._settingsConnectionID)
+      this._settingsConnectionID = null
     }
+    
+    if (this._tracker) {
+      if (this._hasVisibilityInhibited && !this._tracker.get_pointer_visible())
+        this._tracker.uninhibit_cursor_visibility()
+      this._tracker = null
+      this._hasVisibilityInhibited = null
+    }
+    
+    if (this._timer) {
+      GLib.Source.remove(this._timer)
+      this._timer = null
+    }
+
+    if (this._hasFocusInhibited) {
+      this._seat.uninhibit_unfocus()
+      this._hasFocusInhibited = null
+    }
+
+    this._seat = null
+    this._lastMove = null
+    this._settings = null
+    this.HIDE_TIMEOUT = null
+  }
+
+  tick = () => {
+    if (Date.now() - this._lastMove > this.HIDE_TIMEOUT && this._tracker.get_pointer_visible()) {
+      if (!this._hasFocusInhibited) {
+        this._seat.inhibit_unfocus()
+        this._hasFocusInhibited = true
+      }
+      this._tracker.inhibit_cursor_visibility()
+      this._hasVisibilityInhibited = true
+    }
+
+    return GLib.SOURCE_CONTINUE
+  }
+  
+  move = () => {
+    this._lastMove = Date.now()
+
+    if (this._hasFocusInhibited) {
+      this._seat.uninhibit_unfocus()
+      this._hasFocusInhibited = false
+    }
+
+    if (!this._tracker.get_pointer_visible())
+      this._tracker.uninhibit_cursor_visibility()
+
+    this._hasVisibilityInhibited = false
+  }
 }
