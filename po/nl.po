@@ -1,0 +1,17 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: hide-cursor\n"
+"Last-Translator: wouter bolsterlee <wouter@bolsterl.ee>\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: prefs.js:16
+msgid "Cursor Hiding"
+msgstr "Cursor verbergen"
+
+#: prefs.js:22
+msgid "Hide cursor after (seconds)"
+msgstr "Cursor verbergen na (seconden)"
