@@ -9,7 +9,7 @@ export default class HideCursor extends Extension {
   enable() {
     this._settings = this.getSettings()
     this.HIDE_TIMEOUT = this._settings.get_int('timeout') * 1000
-    this._settings.connect('changed::timeout', () =>
+    this._settingsConnectionID = this._settings.connect('changed::timeout', () =>
       this.HIDE_TIMEOUT = this._settings.get_int('timeout') * 1000)
 
     this._seat = Clutter.get_default_backend().get_default_seat()
@@ -24,10 +24,17 @@ export default class HideCursor extends Extension {
       this._tracker.disconnect(this._positionChangedId)
       this._positionChangedId = null
     }
+
+    if (this._settingsConnectionID) {
+      this._settings.disconnect(this._settingsConnectionID)
+      this._settingsConnectionID = null
+    }
     
     if (this._tracker) {
-      this._tracker.uninhibit_cursor_visibility()
+      if (this._hasVisibilityInhibited && !this._tracker.get_pointer_visible())
+        this._tracker.uninhibit_cursor_visibility()
       this._tracker = null
+      this._hasVisibilityInhibited = null
     }
     
     if (this._timer) {
@@ -35,23 +42,25 @@ export default class HideCursor extends Extension {
       this._timer = null
     }
 
-    if (this._hasInhibited) {
+    if (this._hasFocusInhibited) {
       this._seat.uninhibit_unfocus()
-      this._hasInhibited = false
+      this._hasFocusInhibited = null
     }
-      
+
     this._seat = null
     this._lastMove = null
+    this._settings = null
     this.HIDE_TIMEOUT = null
   }
 
   tick = () => {
     if (Date.now() - this._lastMove > this.HIDE_TIMEOUT && this._tracker.get_pointer_visible()) {
-      if (!this._hasInhibited) {
+      if (!this._hasFocusInhibited) {
         this._seat.inhibit_unfocus()
-        this._hasInhibited = true
+        this._hasFocusInhibited = true
       }
       this._tracker.inhibit_cursor_visibility()
+      this._hasVisibilityInhibited = true
     }
 
     return GLib.SOURCE_CONTINUE
@@ -60,12 +69,14 @@ export default class HideCursor extends Extension {
   move = () => {
     this._lastMove = Date.now()
 
-    if (this._hasInhibited) {
+    if (this._hasFocusInhibited) {
       this._seat.uninhibit_unfocus()
-      this._hasInhibited = false
+      this._hasFocusInhibited = false
     }
 
     if (!this._tracker.get_pointer_visible())
       this._tracker.uninhibit_cursor_visibility()
+
+    this._hasVisibilityInhibited = false
   }
 }
