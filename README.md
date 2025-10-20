@@ -1,13 +1,18 @@
 ## Hide Cursor
 
-### Install from the [GNOME Shell Extensions website](https://extensions.gnome.org/extension/6727/hide-cursor/)
-
 GNOME Shell extension to hide the cursor on inactivity
 
-For use on Wayland, since `unclutter`, `unclutter-xfixes` and `xbanish` only work on X11.
+For use on Wayland, since `unclutter`, `unclutter-xfixes` and `xbanish` only work on X11
 
-Works with GNOME Shell 49. For GS 45–47, use version 1.3.0.
+<h3>⁂</h3>
 
-<b>⁂</b>
+#### Install from the [GNOME Shell Extensions website](https://extensions.gnome.org/extension/6727/hide-cursor/)
 
-The branch `timer`, maintained by [iago-lito](https://github.com/iago-lito) corrects the timer behavior, fixing a [flaw in the current version](https://github.com/elcste/hide-cursor/issues/1), but in a way that [breaks the unfocus inhibition](https://github.com/elcste/hide-cursor/pull/6). We will keep this branch up-to-date for people who want correct timing and are OK with loosing focus until someone finds a way to resolve the latter issue. You can install it by cloing the branch into your GNOME Shell extensions directory: `git clone --branch timer https://github.com/elcste/hide-cursor ~/.local/share/gnome-shell/extensions`
+(Or download the file `hide-cursor@elcste.com.zip` from a [release](https://github.com/elcste/hide-cursor/releases) and run `gnome-extension install hide-cursor@elcste.com.zip`)
+
+The latest version (3.0.0) supports GS 49 only. Much thanks to a contributor: this extension has been essentially rewritten. The timeout value is now followed correctly and this value is configurable with a setting (with translation to Russian).
+
+Earlier releases have a fixed 5 second timeout but due to simplistic logic the actual timeout varies under this value.
+- GS 48: use version 2.0.1
+- GS 45–47: version 1.3.0
+- Version 0.1.0 is a backport to GNOME Shell 42 provided by a contributor. I have not tested it myself. (Feedback welcome! Does it work with GS 43 or 44?)
