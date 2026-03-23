@@ -10,7 +10,7 @@ For use on Wayland, since `unclutter`, `unclutter-xfixes` and `xbanish` only wor
 
 (Or download the file `hide-cursor@elcste.com.zip` from a [release](https://github.com/elcste/hide-cursor/releases) and run `gnome-extensions install hide-cursor@elcste.com.zip`)
 
-The latest version (3.0.1) supports GNOME Shell (GS) 49 only. Much thanks to a contributor: this extension has been essentially rewritten. The timeout value is now followed correctly and this value is configurable with a setting.
+The latest version (3.1.0) supports GNOME Shell (GS) 49 and 50. Much thanks to a contributor: this extension has been essentially rewritten. The timeout value is now followed correctly and this value is configurable with a setting.
 
 Settings are translated to Dutch and Russian, thanks to contributors.
 
