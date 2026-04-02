@@ -1,0 +1,20 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: Uwe Senkler\n"
+"Language-Team: \n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.9\n"
+
+#: prefs.js:16
+msgid "Cursor Hiding"
+msgstr "Mauszeiger ausblenden"
+
+#: prefs.js:22
+msgid "Hide cursor after (seconds)"
+msgstr "Mauszeiger ausblenden nach (Sekunden)"
