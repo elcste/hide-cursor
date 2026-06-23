@@ -69,13 +69,13 @@ export default class HideCursor extends Extension {
   move = () => {
     this._lastMove = Date.now()
 
+    if (!this._tracker.get_pointer_visible())
+      this._tracker.uninhibit_cursor_visibility()
+
     if (this._hasFocusInhibited) {
       this._seat.uninhibit_unfocus()
       this._hasFocusInhibited = false
     }
-
-    if (!this._tracker.get_pointer_visible())
-      this._tracker.uninhibit_cursor_visibility()
 
     this._hasVisibilityInhibited = false
   }
