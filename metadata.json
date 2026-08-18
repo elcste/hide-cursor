@@ -4,7 +4,8 @@
   "uuid": "hide-cursor@elcste.com",
   "shell-version": [
     "49",
-    "50"
+    "50",
+    "51"
   ],
   "url": "https://github.com/elcste/hide-cursor",
   "settings-schema": "org.gnome.shell.extensions.hide-cursor-elcste-com",
