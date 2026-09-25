@@ -12,7 +12,7 @@ export default class HideCursor extends Extension {
     this._settingsConnectionID = this._settings.connect('changed::timeout', () =>
       this.HIDE_TIMEOUT = this._settings.get_int('timeout') * 1000)
 
-    this._seat = Clutter.get_default_backend().get_default_seat()
+    this._seat = global.stage.context.get_backend().get_default_seat()
     this._timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, this.TICK_TIMEOUT, this.tick)
     this._tracker = global.backend.get_cursor_tracker()
     this._positionChangedId = this._tracker.connect('position-invalidated', this.move)
